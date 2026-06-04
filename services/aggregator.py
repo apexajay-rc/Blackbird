@@ -74,7 +74,7 @@ class ThreatAggregator:
             ],
 
             score_breakdown=scoring[
-                "breakdown"
+                "score_breakdown"
             ],
 
             provider_results=provider_results
