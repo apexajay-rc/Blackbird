@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 
-from models.threat_indicator import ThreatIndicator
+from models.threat_indicator import (
+    ThreatIndicator
+)
 
 
 class ThreatReport(BaseModel):
