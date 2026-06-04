@@ -1,6 +1,4 @@
-from models.threat_indicator import (
-    ThreatIndicator
-)
+from models.threat_indicator import ThreatIndicator
 
 
 class ThreatScoringEngine:
@@ -8,13 +6,13 @@ class ThreatScoringEngine:
     def calculate(
         self,
         indicators: list[ThreatIndicator]
-    ):
+    ) -> dict:
 
         score = 0
 
         findings = []
 
-        breakdown = []
+        score_breakdown = []
 
         for indicator in indicators:
 
@@ -31,7 +29,7 @@ class ThreatScoringEngine:
 
                 score += points
 
-                breakdown.append(
+                score_breakdown.append(
                     f"Malicious detections: +{points}"
                 )
 
@@ -44,7 +42,7 @@ class ThreatScoringEngine:
 
                 score += points
 
-                breakdown.append(
+                score_breakdown.append(
                     f"Abuse reports: +{points}"
                 )
 
@@ -57,7 +55,7 @@ class ThreatScoringEngine:
 
                 score += points
 
-                breakdown.append(
+                score_breakdown.append(
                     f"Provider confidence: +{points}"
                 )
 
@@ -65,7 +63,7 @@ class ThreatScoringEngine:
 
                 score += 20
 
-                breakdown.append(
+                score_breakdown.append(
                     "Threat intelligence findings: +20"
                 )
 
@@ -77,16 +75,16 @@ class ThreatScoringEngine:
 
                 score -= 10
 
-                breakdown.append(
-                    "Strong positive reputation: -10"
+                score_breakdown.append(
+                    "Positive reputation: -10"
                 )
 
             if indicator.harmless_count > 20:
 
                 score -= 10
 
-                breakdown.append(
-                    "Multiple harmless verdicts: -10"
+                score_breakdown.append(
+                    "Harmless verdicts: -10"
                 )
 
             findings.extend(
@@ -103,25 +101,25 @@ class ThreatScoringEngine:
         )
 
         if score >= 80:
-            risk = "critical"
+            risk_level = "critical"
 
         elif score >= 60:
-            risk = "high"
+            risk_level = "high"
 
         elif score >= 40:
-            risk = "medium"
+            risk_level = "medium"
 
         elif score >= 20:
-            risk = "low"
+            risk_level = "low"
 
         else:
-            risk = "minimal"
+            risk_level = "minimal"
 
         return {
             "score": score,
-            "risk_level": risk,
+            "risk_level": risk_level,
             "findings": list(
                 set(findings)
             ),
-            "breakdown": breakdown
+            "score_breakdown": score_breakdown
         }
