@@ -1,39 +1,62 @@
+from datetime import datetime
+
 from sqlalchemy import (
-    String,
+    DateTime,
     Integer,
-    DateTime
+    JSON,
+    String,
 )
 
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-
-from datetime import datetime
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+)
 
 from app.db.database import Base
 
 
-class IOCSearch(Base):
-    __tablename__ = "ioc_searches"
+class Investigation(Base):
+    __tablename__ = "investigations"
 
     id: Mapped[int] = mapped_column(
         Integer,
-        primary_key=True
+        primary_key=True,
+        autoincrement=True,
     )
 
     indicator: Mapped[str] = mapped_column(
-        String(255)
+        String(255),
+        index=True,
     )
 
     indicator_type: Mapped[str] = mapped_column(
-        String(50)
+        String(50),
     )
 
-    threat_score: Mapped[int] = mapped_column(
+    overall_score: Mapped[int] = mapped_column(
         Integer,
-        default=0
+    )
+
+    risk_level: Mapped[str] = mapped_column(
+        String(30),
+    )
+
+    findings: Mapped[list] = mapped_column(
+        JSON,
+        default=list,
+    )
+
+    score_breakdown: Mapped[list] = mapped_column(
+        JSON,
+        default=list,
+    )
+
+    provider_results: Mapped[list] = mapped_column(
+        JSON,
+        default=list,
     )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
     )
