@@ -1,16 +1,11 @@
 import asyncio
 
-from intelligence.registry import (
-    get_providers
-)
+from intelligence.registry import get_providers
 
-from models.threat_report import (
-    ThreatReport
-)
+from models.threat_indicator import ThreatIndicator
+from models.threat_report import ThreatReport
 
-from services.scoring import (
-    ThreatScoringEngine
-)
+from services.scoring import ThreatScoringEngine
 
 
 class ThreatAggregator:
@@ -19,14 +14,31 @@ class ThreatAggregator:
 
         self.providers = get_providers()
 
-        self.scoring_engine = (
-            ThreatScoringEngine()
-        )
+        self.scoring_engine = ThreatScoringEngine()
 
     async def lookup(
         self,
         indicator: str
     ) -> ThreatReport:
+
+        provider_results = await self.collect_provider_results(
+            indicator
+        )
+
+        scoring = self.scoring_engine.calculate(
+            provider_results
+        )
+
+        return self.build_report(
+            indicator,
+            provider_results,
+            scoring
+        )
+
+    async def collect_provider_results(
+        self,
+        indicator: str
+    ) -> list[ThreatIndicator]:
 
         results = await asyncio.gather(
             *[
@@ -36,46 +48,25 @@ class ThreatAggregator:
             return_exceptions=True
         )
 
-        provider_results = []
+        return [
+            result
+            for result in results
+            if not isinstance(result, Exception)
+        ]
 
-        for result in results:
-
-            if isinstance(
-                result,
-                Exception
-            ):
-                continue
-
-            provider_results.append(
-                result
-            )
-
-        scoring = (
-            self.scoring_engine.calculate(
-                provider_results
-            )
-        )
+    def build_report(
+        self,
+        indicator: str,
+        provider_results: list[ThreatIndicator],
+        scoring: dict
+    ) -> ThreatReport:
 
         return ThreatReport(
             value=indicator,
-
             indicator_type="ip",
-
-            overall_score=scoring[
-                "score"
-            ],
-
-            risk_level=scoring[
-                "risk_level"
-            ],
-
-            findings=scoring[
-                "findings"
-            ],
-
-            score_breakdown=scoring[
-                "score_breakdown"
-            ],
-
-            provider_results=provider_results
+            overall_score=scoring["score"],
+            risk_level=scoring["risk_level"],
+            findings=scoring["findings"],
+            score_breakdown=scoring["score_breakdown"],
+            provider_results=provider_results,
         )
