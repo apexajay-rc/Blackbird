@@ -4,9 +4,26 @@ from app.db.database import engine
 from app.db.database import Base
 from services.aggregator import ThreatAggregator
 import app.db.models
-
+from services.investigation_service import InvestigationService
 from intelligence.providers.virustotal import VirusTotalProvider
 
+@app.get("/history")
+async def history():
+
+    service = InvestigationService()
+
+    investigations = await service.list_recent()
+
+    return [
+        {
+            "id": i.id,
+            "indicator": i.indicator,
+            "risk_level": i.risk_level,
+            "overall_score": i.overall_score,
+            "created_at": i.created_at,
+        }
+        for i in investigations
+    ]
 app = FastAPI(
     title="Threat Intelligence Dashboard",
     version="0.1.0"
